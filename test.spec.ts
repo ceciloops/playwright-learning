@@ -10,9 +10,11 @@ test.describe("Presta Shop", () => {
     // Navigate automationteststore
     await page.goto("https://automationteststore.com/");
 
-    // Access login
-
+    
+    // Waits until the page finishes loading
     await page.waitForLoadState("networkidle");
+
+    // Access login
 
     await page.locator("#main_menu_top > li:nth-child(2) > a > span").click();
     console.log("- User clicks account"); // ok
@@ -68,10 +70,11 @@ test.describe("Presta Shop", () => {
         // Navigate automationteststore
         await page.goto("https://automationteststore.com/");
 
-        // Access login or register
-
+        
+        // Waits until the page finishes loading
         await page.waitForLoadState("networkidle");
-
+        
+        // Access login or register
         await page.locator("#customer_menu_top > li > a").click();
         console.log("- User clicks 'login or register' button"); // ok
 
@@ -91,16 +94,17 @@ test.describe("Presta Shop", () => {
 
     });
 
-    // 4. Register a new user
+    // 4. Register a new user using random firstname and lastname
     test("AC4: User should be able to register a new account with valid details.", async ({ page }) => {
 
         // Navigate automationteststore
         await page.goto("https://automationteststore.com/");
 
-        // Access login or register
-
+        
+        // Waits until the page finishes loading
         await page.waitForLoadState("networkidle");
 
+        // Access login or register
         await page.locator("#customer_menu_top > li > a").click();
         console.log("- User clicks 'login or register' button"); // ok
 
@@ -110,6 +114,7 @@ test.describe("Presta Shop", () => {
 
         console.log("- User clicks continue button"); //ok
 
+        // Waits until the page finishes loading
         await page.waitForLoadState('networkidle');
         await page.waitForSelector("#AccountFrm_firstname", { state: 'visible' });
 
@@ -118,17 +123,18 @@ test.describe("Presta Shop", () => {
         const lastName = faker.person.lastName();
 
         await page.locator("#AccountFrm_firstname").fill(firstName);
-        await page.locator("#AccountFrm_firstname").fill(lastName);
+        await page.locator("#AccountFrm_lastname").fill(lastName);
 
         console.log("- User firstname:",firstName); 
         console.log("- User lastName:",lastName); 
 
-        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@sharklasers.com`;
+        const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@sharklasers.com`; // https://www.guerrillamail.com/
+
+        await page.locator("#AccountFrm_email").fill(email);
 
         console.log("- User email:",email); 
 
         // Random Address, City, State and Zipcode in GB
-
         const address1 = faker.location.streetAddress();
         const city = faker.location.city();
         const region = "Greater London"; 
@@ -147,7 +153,7 @@ test.describe("Presta Shop", () => {
 
 
         // Choose login name
-        const loginName = `${firstName.toLowerCase()}${lastName.toLowerCase()}`;
+        const loginName = `${firstName.toLowerCase()}${lastName.toLowerCase()}`; // interpolation
         await page.locator("#AccountFrm_loginname").fill(loginName);
 
         console.log("- User loginname:",loginName); 
@@ -172,46 +178,86 @@ test.describe("Presta Shop", () => {
         await page.locator("#AccountFrm_agree").click();
         console.log("- User agrees Privacy Policy"); // ok
 
+
         await page.locator("#AccountFrm > div.form-group > div > div > button").click();
+
+
+
+        await page.waitForURL("https://automationteststore.com/index.php?rt=account/success");
+
+
+        // the text exists  Your Account Has Been Created!
+        const message = await page.locator('text=Your Account Has Been Created!');
+        await expect(message).toBeVisible();
+
         console.log("- A new user was registered"); // ok
 
+        // fs module (File System) with the synchronous method (writeFileSync) writes data to the "credentials.json" file.
+        fs.writeFileSync("credentials.json", JSON.stringify({ loginName, password, firstName })); 
+
+
+        // Click on "Continue" button after registration
+        await page.locator("#maincontainer > div > div.col-md-9.col-xs-12.mt20 > div > div > section > a").click();
+
+        // "Continue" button leads to "My account" page
+        await page.waitForURL("https://automationteststore.com/index.php?rt=account/account");
+
+
+        // Locates the "Welcome" element using the specified CSS selector
+        const welcome = page.locator("#customer_menu_top > li > a > div"); 
+
+        // Verifies that the element's text is "Welcome back " followed by the value of the variable firstName (string interpolation)
+        await expect(welcome).toHaveText(`Welcome back ${firstName}`);
+
+        console.log("- Customer menu top says: " + `Welcome back ${firstName}`);
         console.log("AC4: Passes");
-
-        fs.writeFileSync("credentials.json", JSON.stringify({ loginName, password }));
-
     });
 
-    // 5. User should successfully log in with valid credentials - click on account.
-    test("AC5: User should successfully log in with valid credentials - click on account", async ({ page }) => {
-    
-        const json = JSON.parse(fs.readFileSync("credentials.json","utf-8"));
+        // 5. User should successfully log in with valid credentials - click on account.
+        test("AC5: User should successfully log in with valid credentials - click on account", async ({ page }) => {
+
+        // fs module (File System) with the synchronous method (readFileSync) reads and converts the data from the "credentials.json" file into a JavaScript object.
+        const json = JSON.parse(fs.readFileSync("credentials.json","utf-8")); 
         const loginName = json["loginName"];
         const password = json["password"];
+        const firstName = json["firstName"];
 
         // Navigate automationteststore
         await page.goto("https://automationteststore.com/");
-    
+
+        // Waits until the page finishes loading
+        await page.waitForLoadState("networkidle"); 
+
         // Access login
-    
-        await page.waitForLoadState("networkidle");
-    
         await page.locator("#main_menu_top > li:nth-child(2) > a > span").click();
         console.log("- User clicks account"); // ok
-    
+
         // User fills username and password
         await page.waitForSelector("#loginFrm_loginname", { timeout: 10000 });
         await page.locator("#loginFrm_loginname").fill(loginName);
         console.log("- User fills login name of the just registered user:",loginName); // ok
-          
+
         await page.locator("#loginFrm_password").fill(password);
         console.log("- User fills password of the just registered user:",password); // ok
-      
+
         // Click "Login"
         await page.locator("#loginFrm > fieldset > button").click(); 
         console.log("- User clicks login"); // ok
-    
+
+        // "Login" button leads to "My account" page
+        await page.waitForURL("https://automationteststore.com/index.php?rt=account/account");
+
+
+        // Locates the "Welcome" element using the specified CSS selector
+        const welcome = page.locator("#customer_menu_top > li > a > div"); 
+
+        // Verifies that the element's text is "Welcome back " followed by the value of the variable firstName (string interpolation)
+        await expect(welcome).toHaveText(`Welcome back ${firstName}`);
+
+        console.log("- Customer menu top says: " + `Welcome back ${firstName}`);
+
         console.log("AC5: Passes");
-      
+
         });
 
   });
