@@ -20,7 +20,6 @@ test.describe("Presta Shop", () => {
     await page.waitForLoadState("networkidle");
 
     // Access login
-
     await page.locator("#main_menu_top > li:nth-child(2) > a > span").click();
     
     console.log("- User clicks account"); // ok
@@ -48,6 +47,8 @@ test.describe("Presta Shop", () => {
     await page.goto("https://automationteststore.com/");
 
     // Hover account button
+    // Similar a AC1, pero en vez de click directo, primero hace hover sobre "Account" y luego selecciona "Login".
+    // Permite probar que la funcionalidad de login funciona también desde un menú desplegable.
     await page.locator("#main_menu_top > li:nth-child(2) > a > span").hover();
     console.log("- User hovers account"); // ok
 
