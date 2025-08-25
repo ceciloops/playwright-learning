@@ -1,8 +1,14 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test"; 
+// Se importa test y expect de Playwright para definir pruebas y hacer assertions.
+
 import { fakerEN_GB as faker } from "@faker-js/faker";
+// Se importa faker para generar datos aleatorios (nombres, correos, direcciones, etc.).
+
 import * as fs from "fs";
+// Se importa fs para leer y escribir archivos (credentials.json) y guardar usuarios creados.
 
 test.describe("Presta Shop", () => {
+//Todas las pruebas están dentro de test.describe("Presta Shop", ...) que es un contenedor lógico de pruebas relacionadas con Presta Shop.
 
    // 1. User should successfully log in with valid credentials - click on account.
      test("AC1: User should successfully log in with valid credentials - click on account", async ({ page }) => {
