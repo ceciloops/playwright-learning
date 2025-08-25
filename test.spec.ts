@@ -10,7 +10,6 @@ test.describe("Presta Shop", () => {
     // Navigate automationteststore
     await page.goto("https://automationteststore.com/");
 
-    
     // Waits until the page finishes loading
     await page.waitForLoadState("networkidle");
 
